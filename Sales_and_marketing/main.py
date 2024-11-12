@@ -34,7 +34,7 @@ kmeans = KMeans(n_clusters=5, random_state=42)
 data['Category'] = kmeans.fit_predict(features)
 
 # Step 3: Save the results in an Excel sheet
-output_file = "/mnt/data/student_performance_clusters.xlsx"
+output_file = "student_performance_clusters.xlsx"
 data.to_excel(output_file, index=False)
 
 # Step 4: Visualizing the clusters
