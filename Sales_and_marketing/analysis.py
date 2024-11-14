@@ -11,7 +11,7 @@ file_path = 'data.xlsx'
 # Load activity data
 activity_data = pd.read_excel(file_path, sheet_name='Activity_data')
 attendance_data = pd.read_excel(file_path, sheet_name='attendance')
-marks_data = pd.read_excel(file_path, sheet_name='Introduction to sales and marketing post test')
+marks_data = pd.read_excel(file_path, sheet_name='post_test')
 
 # Merge attendance and marks data on student ID or name (assume 'Name' column exists)
 merged_data = pd.merge(attendance_data, marks_data, on='Name')

@@ -1,53 +1,67 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.cluster import KMeans
+import numpy as np
 
 # Load the data from the Excel file
-file_path = 'data.xlsx'  # Replace with the correct file path
+file_path = 'Sales_and_marketing/data.xlsx'  # Replace with the correct file path
 attendance_data = pd.read_excel(file_path, sheet_name='attendance')
 
 # Convert attendance data to numerical format (Present = 1, Absent = 0)
-attendance_data.replace({'Present': 1, 'ABSENT': 0, 'Absent': 0}, inplace=True)
+attendance_data.replace({'P': 1, 'A': 0}, inplace=True)
 
-# Extract student names and genders for identification
+# Extract student names, genders, and attendance columns
 student_info = attendance_data[['Name', 'Gender']]
+attendance_columns = attendance_data.columns[3:]
+attendance_only = attendance_data[attendance_columns]
 
-# Calculate attendance statistics
-attendance_counts = attendance_data.iloc[:, 3:].sum(axis=1)
-total_days = attendance_data.iloc[:, 3:].shape[1]
+# Step 1: Clustering students based on their attendance
+kmeans = KMeans(n_clusters=3, random_state=42)
+attendance_data['Cluster'] = kmeans.fit_predict(attendance_only)
 
-# Categorize students based on attendance
-attendance_data['Attendance Rate'] = attendance_counts / total_days
+# Merge clustering results with student information
+final_data = pd.concat([student_info, attendance_data[['Cluster']]], axis=1)
 
-def categorize_student(rate):
-    if rate > 0.9:
-        return 'Consistently Present'
-    elif rate < 0.5:
-        return 'Consistently Absent'
-    else:
-        return 'Fluctuating'
+# Save clustering results to Excel
+output_file = 'attendance_clustering_results.xlsx'
+final_data.to_excel(output_file, index=False)
 
-attendance_data['Category'] = attendance_data['Attendance Rate'].apply(categorize_student)
+# Visualize clusters
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=attendance_data, x=attendance_only.mean(axis=1), y=attendance_only.std(axis=1), hue='Cluster', palette='viridis')
+plt.title('Clustering of Students Based on Attendance')
+plt.xlabel('Average Attendance')
+plt.ylabel('Attendance Variation')
+plt.tight_layout()
+plt.savefig('attendance_clustering.png')
+plt.show()
 
-# Merge student info with the analysis
-final_data = pd.concat([student_info, attendance_data[['Attendance Rate', 'Category']]], axis=1)
+# Step 2: Plot attendance of each student over activities
+plt.figure(figsize=(14, 8))
+for index, row in attendance_data.iterrows():
+    plt.plot(attendance_columns, row[attendance_columns], marker='o', label=row['Name'])
 
-# Plotting student performance over attendance
+plt.title('Attendance Over Activities for Each Student')
+plt.xlabel('Activity/Date')
+plt.ylabel('Attendance (1 = Present, 0 = Absent)')
+plt.xticks(rotation=45)
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', ncol=2)
+plt.tight_layout()
+plt.savefig('student_attendance_over_activities.png')
+plt.show()
+
+# Step 3: Plot gender-wise attendance trend
+gender_trends = attendance_data.groupby('Gender')[attendance_columns].mean().transpose()
+
 plt.figure(figsize=(12, 6))
-sns.barplot(x='Name', y='Attendance Rate', data=final_data, hue='Category')
-plt.title('Student Attendance Analysis')
+sns.lineplot(data=gender_trends)
+plt.title('Gender-wise Attendance Trend Comparison')
+plt.xlabel('Activity/Date')
+plt.ylabel('Average Attendance (Proportion)')
 plt.xticks(rotation=45)
 plt.tight_layout()
+plt.savefig('gender_attendance_trend.png')
 plt.show()
 
-# Plot the overall distribution of categories
-plt.figure(figsize=(8, 6))
-sns.countplot(x='Category', data=final_data)
-plt.title('Overall Attendance Category Distribution')
-plt.tight_layout()
-plt.show()
-
-# Save the results to an Excel file
-output_file = 'attendance_analysis.xlsx'
-final_data.to_excel(output_file, index=False)
-print(f'Results saved to {output_file}')
+print(f'Clustering and trend plots saved as images and data saved to {output_file}')
