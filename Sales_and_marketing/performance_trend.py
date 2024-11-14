@@ -33,6 +33,11 @@ plt.title('Performance Trend of Each Student Across Activities')
 plt.xticks(rotation=90)
 plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
 plt.tight_layout()
+
+# Save the performance trend plot as an image
+plt.savefig('student_performance_trends.png', bbox_inches='tight')
+
+# Show the plot
 plt.show()
 
 # Plot the clusters (optional: you can plot clusters in a 2D space if you reduce dimensions)
@@ -43,6 +48,11 @@ plt.ylabel('Cluster')
 plt.title('Student Clusters Based on Performance Trends')
 plt.xticks(rotation=90)
 plt.tight_layout()
+
+# Save the cluster plot as an image
+plt.savefig('student_clusters.png', bbox_inches='tight')
+
+# Show the cluster plot
 plt.show()
 
 # Save the cluster data to a new Excel file
